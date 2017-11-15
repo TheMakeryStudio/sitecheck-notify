@@ -28,19 +28,25 @@ class SiteCheckRepository implements SiteCheckInterface
     protected $mailer;
 
     /**
+     * @var logger
+     */
+    protected $logger;    
+
+    /**
      * Create a new instance of the Site Check repository.
-     * @param HttpClient $client 
+     * @param HttpClient $client
      * @return type
      */
-    public function __construct(HttpClient $client, Mailer $mailer)
+    public function __construct(HttpClient $client, Mailer $mailer, Log $logger)
     {
         $this->client = $client;
         $this->mailer = $mailer;
+        $this->logger = $logger;
     }
 
     /**
      * Set email recipients.
-     * @param array $recipients 
+     * @param array $recipients
      * @return type
      */
     public function setRecipients(array $recipients)
@@ -51,7 +57,7 @@ class SiteCheckRepository implements SiteCheckInterface
 
     /**
      * Set the url list.
-     * @param array $urls 
+     * @param array $urls
      * @return type
      */
     public function setUrls(array $urls)
@@ -66,11 +72,24 @@ class SiteCheckRepository implements SiteCheckInterface
      */
     public function run()
     {
+        if (empty($this->recipients) || empty($this->urls)) {
+            throw new Exception('You need to add at least 1 url and 1 ' .
+                'recipient to config/sitecheck.php.');
+        }
+
+        $exception = false;
+
         foreach ($this->urls as $url) {
-            $res = $this->client->get($url);
-            if ($res->getStatusCode() !== 200) {
-                $this->notifyAll($url);
-                $this->logFailure($url);
+            try {
+                $res = $this->client->get($url);
+            } catch (Exception $e) {
+                //dd($e);
+                $exception = true;
+            } finally {
+                if ($res->getStatusCode() !== 200 || $exception) {
+                    $this->notifyAll($url);
+                    $this->logFailure($url);
+                }
             }
         }
     }
@@ -81,18 +100,21 @@ class SiteCheckRepository implements SiteCheckInterface
      */
     private function notifyAll(string $url)
     {
-        $this->mailer->to($this->recipients)
+        $this->mailer->raw(__('sitecheck::body', [
+            'url' => $url]
+        ))
             ->subject(__('sitecheck::subject'))
-            ->send(new SiteCheckFailure($url));
+            ->to($this->recipients);
     }
 
     /**
      * Log the failed request;
-     * @param type $url 
+     * @param type $url
      * @return type
      */
     private function logFailure($url)
     {
-        
+        $this->logger(__('sitecheck::log', [
+            'url' => $url]));
     }
 }

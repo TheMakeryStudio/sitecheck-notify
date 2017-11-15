@@ -3,8 +3,11 @@
 namespace TheNavigators\SiteCheckNotify;
 
 use GuzzleHttp\Client as HttpClient;
+use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Contracts\Logging\Log;
+use Illuminate\Support\ServiceProvider;
 
-class SiteCheckProvider
+class SiteCheckProvider extends ServiceProvider
 {
 
     /**
@@ -16,26 +19,33 @@ class SiteCheckProvider
     {
         $root = __DIR__ . '/..';
 
-        $this->loadTranslationsFrom("$root/lang", 'sitecheck');
+        //$this->loadTranslationsFrom("$root/lang", 'sitecheck');
 
-        $this->loadViewsFrom("$root/views", 'sitecheck');
+        //$this->loadViewsFrom("$root/views", 'sitecheck');
 
         $this->publishes([
             "$root/config/sitecheck.php" => config_path('sitecheck.php'),
-            "$root/config/sitecheck.php" => config_path('sitecheck.php'),
-        ]);
+        ], 'config');
     }
 
     /**
-     * Description
-     * @return type
+     * When requesting the SiteCheckInterface, return an instance of
+     * The SiteCheckRepository and pass configs.
+     *
+     * @return SiteCheckRepository
      */
     public function register()
     {
-        $urls       = config('sitecheck.urls');
-        $recipients = config('sitecheck.recipients');
+        $this->app->bind(SiteCheckInterface::class, function ($app) {
+            $site_check = new SiteCheckRepository(
+                new HttpClient,
+                $app->make(Mailer::class),
+                $app->make(Log::class)
+            );
+            $site_check->setRecipients(config('sitecheck.recipients'))
+                ->setUrls(config('sitecheck.urls'));
 
-        $site_check = new SiteCheckRepository(new HttpClient);
-        $site_check->setRecipients($recipients)->setUrls($urls);
+            return $site_check;
+        });
     }
 }

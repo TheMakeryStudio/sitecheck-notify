@@ -3,7 +3,7 @@
 namespace TheNavigators\SiteCheckNotify;
 
 use Illuminate\Console\Command;
-use TheNavigators\SiteCheckInterface as SiteCheck;
+use TheNavigators\SiteCheckNotify\SiteCheckInterface as SiteCheck;
 
 class CheckSiteCommand extends Command
 {
@@ -37,6 +37,7 @@ class CheckSiteCommand extends Command
     public function __construct(SiteCheck $site_check)
     {
         $this->site_check = $site_check;
+        parent::__construct();
     }
 
     /**

@@ -4,5 +4,21 @@ namespace TheNavigators\SiteCheckNotify;
 
 interface SiteCheckInterface
 {
-    public function check(string $url);
+    /**
+     * Set the recipient list.
+     * @param array $urls
+     */
+    public function setRecipients(array $recipients);
+
+    /**
+     * Set the url list.
+     * @param array $urls
+     */
+    public function setUrls(array $urls);
+
+    /**
+     * Run the library.
+     * @return type
+     */
+    public function run();
 }
