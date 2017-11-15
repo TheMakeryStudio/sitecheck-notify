@@ -113,14 +113,13 @@ class SiteCheckRepository implements SiteCheckInterface
             } catch (Exception $e) {
 
                 $is_valid = false;
-                break;
-                
+
             } finally {
                 
                 if (! $is_valid) {
                     $this->notifyAll($url);
                     $this->logFailure($url);
-                    break;
+                    $is_valid = true;
                 }
             }
         }
