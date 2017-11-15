@@ -1,0 +1,23 @@
+{
+    "name": "thenavigators/sitecheck-notify",
+    "description": "Check a list of urls in a Laravel project and email recipients if down.",
+    "keywords": ["laravel", "sitecheck", "notifier"],
+    "license": "MIT",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "TheNavigators\\SiteCheckNotify\\": "src/"
+        }
+    },
+    "require": {
+        "illuminate/support": "5.5.*",
+        "guzzlehttp/guzzle": "^6.0"
+    },
+    "extra" : {
+        "laravel": {
+            "providers": [
+                "TheNavigators\\SiteCheckNotify\\SiteCheckProvider"
+            ]
+        }
+    }    
+}
