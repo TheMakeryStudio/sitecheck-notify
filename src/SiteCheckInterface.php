@@ -5,6 +5,13 @@ namespace TheNavigators\SiteCheckNotify;
 interface SiteCheckInterface
 {
     /**
+     * Who the email message is from.
+     * @param string $from
+     * @return type
+     */
+    public function setFrom(string $from);
+
+    /**
      * Set the recipient list.
      * @param array $urls
      */

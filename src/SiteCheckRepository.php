@@ -2,11 +2,18 @@
 
 namespace TheNavigators\SiteCheckNotify;
 
+use Exception;
 use GuzzleHttp\Client as HttpClient;
+use Illuminate\Contracts\Logging\Log;
 use Illuminate\Contracts\Mail\Mailer;
 
 class SiteCheckRepository implements SiteCheckInterface
 {
+    /**
+     * @var string
+     */
+    protected $from;
+
     /**
      * @var array
      */
@@ -30,7 +37,7 @@ class SiteCheckRepository implements SiteCheckInterface
     /**
      * @var logger
      */
-    protected $logger;    
+    protected $logger;
 
     /**
      * Create a new instance of the Site Check repository.
@@ -42,6 +49,17 @@ class SiteCheckRepository implements SiteCheckInterface
         $this->client = $client;
         $this->mailer = $mailer;
         $this->logger = $logger;
+    }
+
+    /**
+     * Who the email message is from.
+     * @param string $from 
+     * @return type
+     */
+    public function setFrom(string $from)
+    {
+        $this->from = $from;
+        return $this;
     }
 
     /**
@@ -72,26 +90,39 @@ class SiteCheckRepository implements SiteCheckInterface
      */
     public function run()
     {
+        if (empty($this->from)) {
+            throw new Exception('You must add a from address to ' .
+                'config/sitecheck.php');
+        }
+
         if (empty($this->recipients) || empty($this->urls)) {
             throw new Exception('You need to add at least 1 url and 1 ' .
                 'recipient to config/sitecheck.php.');
         }
 
-        $exception = false;
+        $is_valid = true;
 
         foreach ($this->urls as $url) {
             try {
                 $res = $this->client->get($url);
+
+                if ($res->getStatusCode() !== 200) {
+                    $is_valid = false;
+                }
+
             } catch (Exception $e) {
-                //dd($e);
-                $exception = true;
+
+                $is_valid = false;
+
             } finally {
-                if ($res->getStatusCode() !== 200 || $exception) {
+                
+                if (! $is_valid) {
                     $this->notifyAll($url);
                     $this->logFailure($url);
                 }
             }
         }
+        return $is_valid;
     }
 
     /**
@@ -100,11 +131,14 @@ class SiteCheckRepository implements SiteCheckInterface
      */
     private function notifyAll(string $url)
     {
-        $this->mailer->raw(__('sitecheck::body', [
-            'url' => $url]
-        ))
-            ->subject(__('sitecheck::subject'))
-            ->to($this->recipients);
+        $this->mailer->raw(trans('sitecheck::notify.body', [
+            'url' => $url,
+        ]), function ($message) {
+
+            $message->subject(trans('sitecheck::notify.subject'))
+                ->from($this->from)
+                ->to($this->recipients);
+        });
     }
 
     /**
@@ -114,7 +148,7 @@ class SiteCheckRepository implements SiteCheckInterface
      */
     private function logFailure($url)
     {
-        $this->logger(__('sitecheck::log', [
+        $this->logger->error(trans('sitecheck::notify.log', [
             'url' => $url]));
     }
 }

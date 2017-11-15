@@ -3,8 +3,8 @@
 namespace TheNavigators\SiteCheckNotify;
 
 use GuzzleHttp\Client as HttpClient;
-use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Contracts\Logging\Log;
+use Illuminate\Contracts\Mail\Mailer;
 use Illuminate\Support\ServiceProvider;
 
 class SiteCheckProvider extends ServiceProvider
@@ -19,9 +19,7 @@ class SiteCheckProvider extends ServiceProvider
     {
         $root = __DIR__ . '/..';
 
-        //$this->loadTranslationsFrom("$root/lang", 'sitecheck');
-
-        //$this->loadViewsFrom("$root/views", 'sitecheck');
+        $this->loadTranslationsFrom("$root/lang", 'sitecheck');
 
         $this->publishes([
             "$root/config/sitecheck.php" => config_path('sitecheck.php'),
@@ -30,7 +28,7 @@ class SiteCheckProvider extends ServiceProvider
 
     /**
      * When requesting the SiteCheckInterface, return an instance of
-     * The SiteCheckRepository and pass configs.
+     * The SiteCheckRepository and pass configs, mailer and logger.
      *
      * @return SiteCheckRepository
      */
@@ -42,7 +40,9 @@ class SiteCheckProvider extends ServiceProvider
                 $app->make(Mailer::class),
                 $app->make(Log::class)
             );
-            $site_check->setRecipients(config('sitecheck.recipients'))
+
+            $site_check->setFrom(config('sitecheck.from'))
+                ->setRecipients(config('sitecheck.recipients'))
                 ->setUrls(config('sitecheck.urls'));
 
             return $site_check;

@@ -16,7 +16,8 @@
     "require-dev": {
         "mockery/mockery": "~1.0",
         "phpunit/phpunit": "~5.0",
-        "orchestra/testbench": "~3.1"
+        "orchestra/testbench": "~3.1",
+        "internations/http-mock": "dev-master"
     },    
     "extra" : {
         "laravel": {
