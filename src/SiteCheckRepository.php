@@ -56,7 +56,7 @@ class SiteCheckRepository implements SiteCheckInterface
      * @param string $from 
      * @return type
      */
-    public function setFrom(string $from)
+    public function setFrom($from='')
     {
         $this->from = $from;
         return $this;
@@ -67,7 +67,7 @@ class SiteCheckRepository implements SiteCheckInterface
      * @param array $recipients
      * @return type
      */
-    public function setRecipients(array $recipients)
+    public function setRecipients($recipients=[])
     {
         $this->recipients = $recipients;
         return $this;
@@ -78,7 +78,7 @@ class SiteCheckRepository implements SiteCheckInterface
      * @param array $urls
      * @return type
      */
-    public function setUrls(array $urls)
+    public function setUrls($urls=[])
     {
         $this->urls = $urls;
         return $this;

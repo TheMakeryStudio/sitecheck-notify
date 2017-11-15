@@ -9,19 +9,19 @@ interface SiteCheckInterface
      * @param string $from
      * @return type
      */
-    public function setFrom(string $from);
+    public function setFrom($from='');
 
     /**
      * Set the recipient list.
      * @param array $urls
      */
-    public function setRecipients(array $recipients);
+    public function setRecipients($recipients=[]);
 
     /**
      * Set the url list.
      * @param array $urls
      */
-    public function setUrls(array $urls);
+    public function setUrls($urls=[]);
 
     /**
      * Run the library.
